@@ -11,15 +11,14 @@ void init_matrix(double* m, int rows, int columns) {
 }
 
 
-void mult_matrix(double* out, double* left, double *right, 
+void mult_matrix(double* out, double* left, double *right,
                  int rows_left, int cols_left, int cols_right) {
-    int i, j, k;
-    #pragma omp parallel for schedule(dynamic, 1)
+    int i;
+    #pragma omp parallel for schedule(dynamic)
     for (i = 0; i < rows_left; ++i) {
-        for (j = 0; j < cols_right; ++j) {
+        for (int j = 0; j < cols_right; ++j) {
             out[i*cols_right+j] = 0;
-            #pragma omp parallel for firstprivate(i, j) schedule(guided)
-            for (k = 0; k < cols_left; ++k) 
+            for (int k = 0; k < cols_left; ++k)
                 out[i*cols_right+j] += left[i*cols_left+k]*right[k*cols_right+j];
         }
     }
@@ -40,7 +39,7 @@ int main (int argc, char *argv[]) {
 
     //          c = a * b
     mult_matrix(c,  a,  b, sz, sz, sz);
-    
+
     /* ~~~ imprime matriz ~~~ */
     char tmp[32];
     int max_len = 1;
@@ -51,10 +50,10 @@ int main (int argc, char *argv[]) {
         }
     }
     char fmt[16];
-    if (snprintf(fmt, 16, "%%s%%%dld", max_len) < 0) 
+    if (snprintf(fmt, 16, "%%s%%%dld", max_len) < 0)
         abort();
     for (int i = 0; i < sz; ++i) {
-        for (int j = 0; j < sz; ++j) 
+        for (int j = 0; j < sz; ++j)
             printf(fmt, j == 0 ? "" : " ", (unsigned long)c[i*sz+j]);
         printf("\n");
     }
